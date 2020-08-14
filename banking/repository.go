@@ -45,15 +45,15 @@ type InMemoryDb struct {
 	ledger       []Ledger
 }
 
-func (db *InMemoryDb) getAccounts() []Account {
+func (db *InMemoryDb) findAccounts() []Account {
 	return db.accounts
 }
 
-func (db *InMemoryDb) createAccount(acc Account) {
+func (db *InMemoryDb) saveAccount(acc Account) {
 	db.accounts = append(db.accounts, acc)
 }
 
-func (db *InMemoryDb) getAccountById(id uint) *Account {
+func (db *InMemoryDb) findAccountById(id uint) *Account {
 	for i := range db.accounts {
 		if db.accounts[i].Id == id {
 			return &db.accounts[i]
@@ -63,20 +63,20 @@ func (db *InMemoryDb) getAccountById(id uint) *Account {
 	return nil
 }
 
-func (db *InMemoryDb) getLedger() []Ledger {
+func (db *InMemoryDb) findLedger() []Ledger {
 	return db.ledger
 }
 
-func (db *InMemoryDb) getTransactions() []Transaction {
+func (db *InMemoryDb) findTransactions() []Transaction {
 	return db.transactions
 }
 
 // createTransaction should be part of an atomic operation
-func (db *InMemoryDb) createTransaction(txn Transaction) {
+func (db *InMemoryDb) saveTransaction(txn Transaction) {
 	db.transactions = append(db.transactions, txn)
 }
 
 // createLedgerEntries creates Credit Debit pair, should be part of an atomic operation
-func (db *InMemoryDb) createLedgerEntries(cEntry Ledger, dEntry Ledger) {
+func (db *InMemoryDb) saveLedgerEntries(cEntry Ledger, dEntry Ledger) {
 	db.ledger = append(db.ledger, cEntry, dEntry)
 }

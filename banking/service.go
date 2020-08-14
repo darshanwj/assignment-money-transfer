@@ -26,11 +26,11 @@ func New(repo InMemoryDb) Service {
 }
 
 func (s *service) GetAccounts() []Account {
-	return s.repo.getAccounts()
+	return s.repo.findAccounts()
 }
 
 func (s *service) CreateAccount(acc Account) {
-	s.repo.createAccount(acc)
+	s.repo.saveAccount(acc)
 	// @TODO: Create ledger entries
 }
 
@@ -83,25 +83,25 @@ func (s *service) validateTransfer(trn Transfer) (sender *Account, receiver *Acc
 }
 
 func (s *service) GetAccountById(id uint) *Account {
-	return s.repo.getAccountById(id)
+	return s.repo.findAccountById(id)
 }
 
 func (s *service) GetLedgerEntries() []Ledger {
-	return s.repo.getLedger()
+	return s.repo.findLedger()
 }
 
 func (s *service) GetTransactions() []Transaction {
-	return s.repo.getTransactions()
+	return s.repo.findTransactions()
 }
 
 func (s *service) createTransaction(txnType string) Transaction {
 	txn := Transaction{Id: xid.New().String(), Ts: time.Now(), Type: txnType}
-	s.repo.createTransaction(txn)
+	s.repo.saveTransaction(txn)
 	return txn
 }
 
 func (s *service) createLedgerEntries(cAcc Account, dAcc Account, txn Transaction, amount money.Money) {
-	s.repo.createLedgerEntries(Ledger{
+	s.repo.saveLedgerEntries(Ledger{
 		Id:            xid.New().String(),
 		AccountId:     cAcc.Id,
 		Amount:        amount,

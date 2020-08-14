@@ -1,4 +1,4 @@
-package service
+package banking
 
 import (
 	"errors"
@@ -94,14 +94,12 @@ func (s *service) GetTransactions() []Transaction {
 	return s.repo.getTransactions()
 }
 
-// createTransaction should be part of an atomic operation
 func (s *service) createTransaction(txnType string) Transaction {
 	txn := Transaction{Id: xid.New().String(), Ts: time.Now(), Type: txnType}
 	s.repo.createTransaction(txn)
 	return txn
 }
 
-// createLedgerEntries creates Credit Debit pair, should be part of an atomic operation
 func (s *service) createLedgerEntries(cAcc Account, dAcc Account, txn Transaction, amount money.Money) {
 	s.repo.createLedgerEntries(Ledger{
 		Id:            xid.New().String(),
@@ -118,7 +116,6 @@ func (s *service) createLedgerEntries(cAcc Account, dAcc Account, txn Transactio
 	})
 }
 
-// Credit one account, debit the other, should be part of an atomic operation
 func (s *service) updateAccountBalances(sender *Account, receiver *Account, amount money.Money) error {
 	sb, err := sender.Balance.Subtract(&amount)
 	if err != nil {

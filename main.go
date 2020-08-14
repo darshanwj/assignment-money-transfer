@@ -6,14 +6,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/darshanwj/assignment-money-transfer/service"
-
+	"github.com/darshanwj/assignment-money-transfer/banking"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	db := service.InMemoryDb{}
-	h := &handler{service.New(db)}
+	db := banking.InMemoryDb{}
+	h := &handler{banking.New(db)}
 	r := mux.NewRouter()
 	r.Use(commonMiddleware)
 	r.HandleFunc("/transfer", h.TransferHandler).Methods(http.MethodPost)
@@ -23,7 +22,7 @@ func main() {
 }
 
 type handler struct {
-	service.Service
+	banking.Service
 }
 
 // GetAccountsHandler reads all accounts and outputs JSON
@@ -39,7 +38,7 @@ func (h *handler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var acc service.Account
+	var acc banking.Account
 	if err = json.Unmarshal(body, &acc); err != nil {
 		http.Error(w, "Invalid request format", http.StatusBadRequest)
 		return
@@ -58,7 +57,7 @@ func (h *handler) TransferHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var trn service.Transfer
+	var trn banking.Transfer
 	if err = json.Unmarshal(body, &trn); err != nil {
 		http.Error(w, "Invalid request format", http.StatusBadRequest)
 		return

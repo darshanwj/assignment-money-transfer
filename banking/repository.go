@@ -1,4 +1,4 @@
-package service
+package banking
 
 import (
 	"time"
@@ -71,10 +71,12 @@ func (db *InMemoryDb) getTransactions() []Transaction {
 	return db.transactions
 }
 
+// createTransaction should be part of an atomic operation
 func (db *InMemoryDb) createTransaction(txn Transaction) {
 	db.transactions = append(db.transactions, txn)
 }
 
+// createLedgerEntries creates Credit Debit pair, should be part of an atomic operation
 func (db *InMemoryDb) createLedgerEntries(cEntry Ledger, dEntry Ledger) {
 	db.ledger = append(db.ledger, cEntry, dEntry)
 }

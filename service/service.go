@@ -11,14 +11,10 @@ import (
 type Service interface {
 	GetAccounts() []Account
 	CreateAccount(acc Account)
-	ValidateTransfer(trn Transfer) (sender *Account, receiver *Account, err error)
 	Transfer(trn Transfer) (*Account, error)
 	GetAccountById(id uint) *Account
 	GetLedgerEntries() []Ledger
 	GetTransactions() []Transaction
-	createTransaction(txnType string) Transaction
-	createLedgerEntries(cAcc Account, dAcc Account, txn Transaction, amount money.Money)
-	updateAccountBalances(sender *Account, receiver *Account, amount money.Money) error
 }
 
 type service struct {
@@ -29,21 +25,18 @@ func New(repo InMemoryDb) Service {
 	return &service{repo: repo}
 }
 
-// Get all accounts
 func (s *service) GetAccounts() []Account {
 	return s.repo.getAccounts()
 }
 
-// Saves a single account
 func (s *service) CreateAccount(acc Account) {
 	s.repo.createAccount(acc)
 	// @TODO: Create ledger entries
 }
 
-// Validates and saves a transfer
 func (s *service) Transfer(trn Transfer) (*Account, error) {
-
-	sender, receiver, err := s.ValidateTransfer(trn)
+	// Validate first
+	sender, receiver, err := s.validateTransfer(trn)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +44,7 @@ func (s *service) Transfer(trn Transfer) (*Account, error) {
 	// START TRANSACTION if this was a db
 
 	txn := s.createTransaction(TxnTypeTransfer)
-
 	s.createLedgerEntries(*receiver, *sender, txn, trn.Amount)
-
 	if err = s.updateAccountBalances(sender, receiver, trn.Amount); err != nil {
 		return nil, err
 	}
@@ -63,8 +54,7 @@ func (s *service) Transfer(trn Transfer) (*Account, error) {
 	return sender, nil
 }
 
-// Validates a transfer
-func (s *service) ValidateTransfer(trn Transfer) (sender *Account, receiver *Account, err error) {
+func (s *service) validateTransfer(trn Transfer) (sender *Account, receiver *Account, err error) {
 	// Sender account should exist
 	sender = s.GetAccountById(trn.Sender)
 	if sender == nil {
@@ -92,29 +82,26 @@ func (s *service) ValidateTransfer(trn Transfer) (sender *Account, receiver *Acc
 	return sender, receiver, nil
 }
 
-// Gets single account by id
 func (s *service) GetAccountById(id uint) *Account {
 	return s.repo.getAccountById(id)
 }
 
-// Gets all ledger entries
 func (s *service) GetLedgerEntries() []Ledger {
 	return s.repo.getLedger()
 }
 
-// Gets all transactions
 func (s *service) GetTransactions() []Transaction {
 	return s.repo.getTransactions()
 }
 
-// Create transaction, should be part of an atomic operation
+// createTransaction should be part of an atomic operation
 func (s *service) createTransaction(txnType string) Transaction {
 	txn := Transaction{Id: xid.New().String(), Ts: time.Now(), Type: txnType}
 	s.repo.createTransaction(txn)
 	return txn
 }
 
-// Credit Debit pair, should be part of an atomic operation
+// createLedgerEntries creates Credit Debit pair, should be part of an atomic operation
 func (s *service) createLedgerEntries(cAcc Account, dAcc Account, txn Transaction, amount money.Money) {
 	s.repo.createLedgerEntries(Ledger{
 		Id:            xid.New().String(),

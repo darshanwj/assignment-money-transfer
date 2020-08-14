@@ -26,12 +26,12 @@ type handler struct {
 	service.Service
 }
 
-// Reads all accounts and outputs JSON
+// GetAccountsHandler reads all accounts and outputs JSON
 func (h *handler) GetAccountsHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(h.GetAccounts())
 }
 
-// Creates a single account and outputs JSON
+// CreateAccountHandler creates a single account and outputs JSON
 func (h *handler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -50,7 +50,7 @@ func (h *handler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(acc)
 }
 
-// Performs a transfer from one account to another
+// TransferHandler performs a transfer from one account to another
 func (h *handler) TransferHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -73,7 +73,7 @@ func (h *handler) TransferHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(acc)
 }
 
-// Sets JSON content type header for all responses
+// commonMiddleware sets JSON content type header for all responses
 func commonMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")

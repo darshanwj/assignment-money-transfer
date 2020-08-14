@@ -8,13 +8,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/darshanwj/assignment-money-transfer/service"
+	"github.com/darshanwj/assignment-money-transfer/banking"
 
 	"github.com/Rhymond/go-money"
 	"github.com/stretchr/testify/assert"
 )
 
-var h = &handler{service.New(service.InMemoryDb{})}
+var h = &handler{banking.New(banking.InMemoryDb{})}
 
 // Some test accounts
 var tt = []struct {
@@ -43,7 +43,7 @@ func TestCreateAccountHandler(t *testing.T) {
 		assert.EqualValues(t, http.StatusOK, rr.Code)
 		t.Log(rr.Body)
 
-		var acc service.Account
+		var acc banking.Account
 		err = json.Unmarshal(rr.Body.Bytes(), &acc)
 		assert.Nil(t, err)
 		assert.NotNil(t, acc)
@@ -69,7 +69,7 @@ func TestGetAccountsHandler(t *testing.T) {
 	assert.EqualValues(t, http.StatusOK, rr.Code)
 	t.Log(rr.Body)
 
-	var accs []service.Account
+	var accs []banking.Account
 	err = json.Unmarshal(rr.Body.Bytes(), &accs)
 	assert.Nil(t, err)
 	assert.NotNil(t, accs)
@@ -140,7 +140,7 @@ func TestTransferHandler(t *testing.T) {
 	assert.EqualValues(t, http.StatusOK, rr.Code)
 	t.Log(rr.Body)
 
-	var acc service.Account
+	var acc banking.Account
 	err = json.Unmarshal(rr.Body.Bytes(), &acc)
 	assert.Nil(t, err)
 	assert.NotNil(t, acc)
@@ -167,7 +167,7 @@ func TestTransferHandler(t *testing.T) {
 	t.Log(txns)
 	assert.NotEmpty(t, txns)
 	txn := txns[0]
-	assert.Equal(t, service.TxnTypeTransfer, txn.Type)
+	assert.Equal(t, banking.TxnTypeTransfer, txn.Type)
 
 	// Test ledger entries
 	ledger := h.GetLedgerEntries()
@@ -176,13 +176,13 @@ func TestTransferHandler(t *testing.T) {
 	lc := ledger[0]
 	assert.Equal(t, tt[2].id, lc.AccountId)
 	assert.Equal(t, txn.Id, lc.TransactionId)
-	assert.Equal(t, service.EntryTypeCredit, lc.Type)
+	assert.Equal(t, banking.EntryTypeCredit, lc.Type)
 	eq, _ = trn.Equals(&lc.Amount)
 	assert.True(t, eq)
 	ld := ledger[1]
 	assert.Equal(t, tt[0].id, ld.AccountId)
 	assert.Equal(t, txn.Id, ld.TransactionId)
-	assert.Equal(t, service.EntryTypeDebit, ld.Type)
+	assert.Equal(t, banking.EntryTypeDebit, ld.Type)
 	eq, _ = trn.Equals(&ld.Amount)
 	assert.True(t, eq)
 }

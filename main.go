@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	h := &handler{service.New()}
+	db := service.InMemoryDb{}
+	h := &handler{service.New(db)}
 	r := mux.NewRouter()
 	r.Use(commonMiddleware)
 	r.HandleFunc("/transfer", h.TransferHandler).Methods(http.MethodPost)

@@ -41,9 +41,11 @@ type Transfer struct {
 	Amount   money.Money `json:"amount"`
 }
 
-var accounts []Account
-var transactions []Transaction
-var ledger []Ledger
+type InMemoryDb struct {
+	Accounts     []Account
+	Transactions []Transaction
+	Ledger       []Ledger
+}
 
 type Service interface {
 	GetAccounts() []Account
@@ -58,20 +60,22 @@ type Service interface {
 	updateAccountBalances(sender *Account, receiver *Account, amount money.Money) error
 }
 
-type service struct{}
+type service struct {
+	repo InMemoryDb
+}
 
-func New() Service {
-	return &service{}
+func New(repo InMemoryDb) Service {
+	return &service{repo: repo}
 }
 
 // Get all accounts
 func (s *service) GetAccounts() []Account {
-	return accounts
+	return s.repo.Accounts
 }
 
 // Saves a single account
 func (s *service) CreateAccount(acc Account) {
-	accounts = append(accounts, acc)
+	s.repo.Accounts = append(s.repo.Accounts, acc)
 	// @TODO: Create ledger entries
 }
 
@@ -129,9 +133,9 @@ func (s *service) ValidateTransfer(trn Transfer) (sender *Account, receiver *Acc
 
 // Gets single account by id
 func (s *service) GetAccountById(id uint) *Account {
-	for i := range accounts {
-		if accounts[i].Id == id {
-			return &accounts[i]
+	for i := range s.repo.Accounts {
+		if s.repo.Accounts[i].Id == id {
+			return &s.repo.Accounts[i]
 		}
 	}
 
@@ -140,24 +144,24 @@ func (s *service) GetAccountById(id uint) *Account {
 
 // Gets all ledger entries
 func (s *service) GetLedgerEntries() []Ledger {
-	return ledger
+	return s.repo.Ledger
 }
 
 // Gets all transactions
 func (s *service) GetTransactions() []Transaction {
-	return transactions
+	return s.repo.Transactions
 }
 
 // Create transaction, should be part of an atomic operation
 func (s *service) createTransaction(txnType string) Transaction {
 	txn := Transaction{Id: xid.New().String(), Ts: time.Now(), Type: txnType}
-	transactions = append(transactions, txn)
+	s.repo.Transactions = append(s.repo.Transactions, txn)
 	return txn
 }
 
 // Credit Debit pair, should be part of an atomic operation
 func (s *service) createLedgerEntries(cAcc Account, dAcc Account, txn Transaction, amount money.Money) {
-	ledger = append(ledger, Ledger{
+	s.repo.Ledger = append(s.repo.Ledger, Ledger{
 		Id:            xid.New().String(),
 		AccountId:     cAcc.Id,
 		Amount:        amount,

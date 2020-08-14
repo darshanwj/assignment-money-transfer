@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var h = &handler{service.New()}
+var h = &handler{service.New(service.InMemoryDb{})}
 
 // Some test accounts
 var tt = []struct {

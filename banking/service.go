@@ -10,7 +10,7 @@ import (
 
 type Service interface {
 	GetAccounts() []Account
-	CreateAccount(acc Account)
+	CreateAccount(acc Account) error
 	Transfer(trn Transfer) (*Account, error)
 	GetAccountById(id uint) *Account
 	GetLedgerEntries() []Ledger
@@ -29,9 +29,13 @@ func (s *service) GetAccounts() []Account {
 	return s.repo.findAccounts()
 }
 
-func (s *service) CreateAccount(acc Account) {
+func (s *service) CreateAccount(acc Account) error {
+	if s.GetAccountById(acc.Id) != nil {
+		return errors.New("Account ID already exists")
+	}
 	s.repo.saveAccount(acc)
 	// @TODO: Create ledger entries
+	return nil
 }
 
 func (s *service) Transfer(trn Transfer) (*Account, error) {

@@ -43,7 +43,10 @@ func (h *handler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.CreateAccount(acc)
+	if err = h.CreateAccount(acc); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	_ = json.NewEncoder(w).Encode(acc)
 }

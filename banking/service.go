@@ -18,18 +18,18 @@ type Service interface {
 }
 
 type service struct {
-	repo InMemoryDb
+	repo *InMemoryDb
 }
 
-func New(repo InMemoryDb) Service {
-	return &service{repo: repo}
+func New(repo *InMemoryDb) Service {
+	return service{repo: repo}
 }
 
-func (s *service) GetAccounts() []Account {
+func (s service) GetAccounts() []Account {
 	return s.repo.findAccounts()
 }
 
-func (s *service) CreateAccount(acc Account) error {
+func (s service) CreateAccount(acc Account) error {
 	if s.GetAccountById(acc.Id) != nil {
 		return errors.New("Account ID already exists")
 	}
@@ -38,7 +38,7 @@ func (s *service) CreateAccount(acc Account) error {
 	return nil
 }
 
-func (s *service) Transfer(trn Transfer) (*Account, error) {
+func (s service) Transfer(trn Transfer) (*Account, error) {
 	// Validate first
 	sender, receiver, err := s.validateTransfer(trn)
 	if err != nil {
@@ -86,25 +86,25 @@ func (s *service) validateTransfer(trn Transfer) (sender *Account, receiver *Acc
 	return sender, receiver, nil
 }
 
-func (s *service) GetAccountById(id uint) *Account {
+func (s service) GetAccountById(id uint) *Account {
 	return s.repo.findAccountById(id)
 }
 
-func (s *service) GetLedgerEntries() []Ledger {
+func (s service) GetLedgerEntries() []Ledger {
 	return s.repo.findLedger()
 }
 
-func (s *service) GetTransactions() []Transaction {
+func (s service) GetTransactions() []Transaction {
 	return s.repo.findTransactions()
 }
 
-func (s *service) createTransaction(txnType string) Transaction {
+func (s service) createTransaction(txnType string) Transaction {
 	txn := Transaction{Id: xid.New().String(), Ts: time.Now(), Type: txnType}
 	s.repo.saveTransaction(txn)
 	return txn
 }
 
-func (s *service) createLedgerEntries(cAcc Account, dAcc Account, txn Transaction, amount money.Money) {
+func (s service) createLedgerEntries(cAcc Account, dAcc Account, txn Transaction, amount money.Money) {
 	s.repo.saveLedgerEntries(Ledger{
 		Id:            xid.New().String(),
 		AccountId:     cAcc.Id,
@@ -120,7 +120,7 @@ func (s *service) createLedgerEntries(cAcc Account, dAcc Account, txn Transactio
 	})
 }
 
-func (s *service) updateAccountBalances(sender *Account, receiver *Account, amount money.Money) error {
+func (s service) updateAccountBalances(sender *Account, receiver *Account, amount money.Money) error {
 	sb, err := sender.Balance.Subtract(&amount)
 	if err != nil {
 		return err

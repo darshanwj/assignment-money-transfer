@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	h := &handler{banking.New(banking.InMemoryDb{})}
+	h := handler{banking.New(&banking.InMemoryDb{})}
 	r := mux.NewRouter()
 	r.Use(commonMiddleware)
 	r.HandleFunc("/transfer", h.TransferHandler).Methods(http.MethodPost)
@@ -25,12 +25,12 @@ type handler struct {
 }
 
 // GetAccountsHandler reads all accounts and outputs JSON
-func (h *handler) GetAccountsHandler(w http.ResponseWriter, r *http.Request) {
+func (h handler) GetAccountsHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(h.GetAccounts())
 }
 
 // CreateAccountHandler creates a single account and outputs JSON
-func (h *handler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
+func (h handler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -52,7 +52,7 @@ func (h *handler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // TransferHandler performs a transfer from one account to another
-func (h *handler) TransferHandler(w http.ResponseWriter, r *http.Request) {
+func (h handler) TransferHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

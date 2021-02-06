@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var h = &handler{banking.New(banking.InMemoryDb{})}
+var h = handler{banking.New(&banking.InMemoryDb{})}
 
 // Some test accounts
 var tt = []struct {
